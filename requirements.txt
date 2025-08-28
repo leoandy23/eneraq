@@ -1,0 +1,10 @@
+Flask
+Flask-Cors
+flask_sqlalchemy
+flask-jwt-extended
+sqlalchemy
+uvicorn
+python-dotenv
+mysql-connector-python
+pymysql
+python-dateutil
