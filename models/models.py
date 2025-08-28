@@ -20,6 +20,28 @@ class EnergyDevice(Base):
         "EnergyReading", back_populates="device", cascade="all, delete-orphan"
     )
 
+    def to_dict(self, include_readings: bool = False):
+        """
+        Convierte el objeto EnergyDevice a un diccionario.
+
+        Args:
+            include_readings: Si es True, incluye las lecturas asociadas
+        """
+        result = {
+            "id": str(self.id),
+            "serial_number": self.serial_number,
+            "firmware_version": self.firmware_version,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+        if include_readings and self.energy_readings:
+            result["energy_readings"] = [
+                reading.to_dict() for reading in self.energy_readings
+            ]
+
+        return result
+
 
 class EnergyReading(Base):
     __tablename__ = "energy_readings"
@@ -48,6 +70,36 @@ class EnergyReading(Base):
 
     device = relationship("EnergyDevice", back_populates="energy_readings")
 
+    def to_dict(self, include_device: bool = False, include_raw_data: bool = False):
+        """
+        Convierte el objeto EnergyReading a un diccionario.
+
+        Args:
+            include_device: Si es True, incluye información básica del dispositivo
+            include_raw_data: Si es True, incluye los datos crudos completos
+        """
+        result = {
+            "id": str(self.id),
+            "device_id": str(self.device_id),
+            "alarm_status": self.alarm_status,
+            "switch_status": self.switch_status,
+            "current_measurements": self.current_measurements,
+            "power_measurements": self.power_measurements,
+            "voltage_measurements": self.voltage_measurements,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+        if include_device and self.device:
+            result["device"] = {
+                "serial_number": self.device.serial_number,
+                "firmware_version": self.device.firmware_version,
+            }
+
+        if include_raw_data:
+            result["raw_data"] = self.raw_data
+
+        return result
+
 
 class ShortCircuit(Base):
     __tablename__ = "short_circuits"
@@ -61,3 +113,21 @@ class ShortCircuit(Base):
     previous_active = Column(Boolean, nullable=True)
     previous_timestamp = Column(DateTime, nullable=True)
     previous_duration_seconds = Column(Integer, nullable=True)
+
+    def to_dict(self):
+        """
+        Convierte el objeto ShortCircuit a un diccionario.
+        """
+        return {
+            "id": self.id,
+            "control_mac": self.control_mac,
+            "wifi_mac": self.wifi_mac,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "current_active": self.current_active,
+            "current_duration_seconds": self.current_duration_seconds,
+            "previous_active": self.previous_active,
+            "previous_timestamp": (
+                self.previous_timestamp.isoformat() if self.previous_timestamp else None
+            ),
+            "previous_duration_seconds": self.previous_duration_seconds,
+        }

@@ -1,5 +1,6 @@
+from typing import List
 from models.models import EnergyDevice, EnergyReading
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 
 def save_sensor_data(db: Session, sensor_data: dict):
@@ -51,3 +52,14 @@ def save_sensor_data(db: Session, sensor_data: dict):
     db.refresh(record)
 
     return record
+
+
+def get_all_energy_devices_with_readings(db: Session) -> List[dict]:
+    """
+    Obtiene todos los dispositivos de energía con sus lecturas asociadas.
+    Retorna una lista de diccionarios.
+    """
+    devices = (
+        db.query(EnergyDevice).options(joinedload(EnergyDevice.energy_readings)).all()
+    )
+    return [device.to_dict(include_readings=True) for device in devices]

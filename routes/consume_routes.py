@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify
-from services.consume_service import save_sensor_data
+from services.consume_service import (
+    save_sensor_data,
+    get_all_energy_devices_with_readings,
+)
 from core.config import SessionLocal
 from sqlalchemy.exc import SQLAlchemyError
 import logging
@@ -34,6 +37,30 @@ def consume_sensor_data():
     except ValueError as ve:
         logging.error(f"ValueError: {ve}")
         return jsonify({"status": "error", "message": str(ve)}), 400
+
+    except SQLAlchemyError as e:
+        logging.error(f"Database error: {e}")
+        return jsonify({"status": "error", "message": "Database error"}), 500
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@consume_bp.route("/api/sensor_data", methods=["GET"])
+def get_sensor_data():
+    try:
+        with SessionLocal() as db:
+            sensor_data = get_all_energy_devices_with_readings(db)
+            return (
+                jsonify(
+                    {
+                        "status": "success",
+                        "data": sensor_data,
+                    }
+                ),
+                200,
+            )
 
     except SQLAlchemyError as e:
         logging.error(f"Database error: {e}")
