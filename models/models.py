@@ -7,6 +7,30 @@ from datetime import datetime
 Base = declarative_base()
 
 
+class DeviceAlive(Base):
+    __tablename__ = "device_alive"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    device_name = Column(String(100), nullable=False)
+    mac_address = Column(String(17), unique=False, nullable=False)
+    serial_number = Column(String(100), unique=False, nullable=False)
+    state_duration = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        """
+        Convierte el objeto DeviceAlive a un diccionario.
+        """
+        return {
+            "id": str(self.id),
+            "device_name": self.device_name,
+            "mac_address": self.mac_address,
+            "serial_number": self.serial_number,
+            "state_duration": self.state_duration,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+        }
+
+
 class EnergyDevice(Base):
     __tablename__ = "energy_devices"
 

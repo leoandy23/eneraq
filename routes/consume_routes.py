@@ -27,8 +27,7 @@ def consume_sensor_data():
                 {
                     "status": "success",
                     "message": "Sensor data saved successfully",
-                    "record_id": str(record.id),
-                    "device_id": str(record.device_id),
+                    "record": record.to_dict(),
                 }
             ),
             201,
